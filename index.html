@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="base.css">
+        <link rel="stylesheet" type="text/css" href="dialog.css">
+        <link rel="stylesheet" type="text/css" href="noty.css">
+        <link rel="stylesheet" type="text/css" href="confirm.css">
+        <script src="http://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+        <script type="text/javascript" src="dialog.js"></script>
+        <script type="text/javascript" src="noty.js"></script>
+        <script type="text/javascript" src="confirm.js"></script>
+    </head>
+    <style type="text/css">
+        .body {
+            padding: 20px;
+            width: 600px;
+            margin: 0 auto;
+        }
+        fieldset {
+            padding: 20px;
+            border: 1px solid #ccc;
+            margin: 10px;
+        }
+        legend {
+            color: rgba(0, 0, 0, 0.65);
+        }
+    </style>
+    <body>
+        <div class="body">
+            <fieldset>
+                <legend>Input</legend>
+                <input class="free" placeholder="输入框" />
+            </fieldset>
+            <fieldset>
+                <legend>Button</legend>
+                <button class="free primary">primary</button>
+                <button class="free default">default</button>
+            </fieldset>
+            <fieldset>
+                <legend>Dialog</legend>
+                <button class="free primary" onclick="openDialog()">open dialog</button>
+            </fieldset>
+            <fieldset>
+                <legend>Notification</legend>
+                <button class="free default" onclick="notySuccess()">success</button>
+                <button class="free default" onclick="notyInfo()">info</button>
+                <button class="free default" onclick="notyError()">error</button>
+                <button class="free default" onclick="notyWarn()">warn</button>
+            </fieldset>
+            <fieldset>
+                <legend>Confirm</legend>
+                <button class="free primary" onclick="openConfirm()">confirm</button>
+            </fieldset>
+        </div>
+    </body>
+    <script type="text/javascript">
+        function openDialog() {
+            free.dialog({'title': '详细信息', 'content': "Something...</br>Something...</br>Something...</br>"});
+        }
+        function notySuccess() {
+            free.noty.success('更新成功');
+        }
+        function notyError() {
+            free.noty.error('服务器错误');
+        }
+        function notyWarn() {
+            free.noty.warn('这是个警告');
+        }
+        function notyInfo() {
+            free.noty.info('展示信息');
+        }
+
+        function openConfirm() {
+            free.confirm({
+                'title': '删除',
+                'content': '您确定删除此项吗？',
+                'ok': function() {
+                    console.log('ok');
+                },
+                'cancel': function() {
+                    console.log('cancel');
+                }
+            });
+        }
+    </script>
+</html>

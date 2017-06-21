@@ -1,0 +1,48 @@
+.free-confirm-box {
+    width: 400px;
+}
+.free-confirm-title {
+    font-weight: 500;
+}
+.free-confirm-title .icon {
+    color: #ffbf00;
+    font-style: normal;
+    margin-right: 5px;
+}
+.free-confirm-title .icon:before {
+    content: '\E61b';
+    font-family: 'iconfont';
+    font-size: 22px;
+    vertical-align: middle;
+}
+.free-confirm-content {
+    font-size: 13px;
+}
+
+.free-confirm-btns button {
+    width: 60px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.free-confirm-ok {
+    background: #108ee9;
+    border: 1px solid #108ee9;
+    color: #fff;
+    border-radius: 3px;
+}
+.free-confirm-ok:hover {
+    color: #fff;
+    background-color: #49a9ee;
+    border-color: #49a9ee;
+}
+.free-confirm-cancel {
+    margin-right: 20px;
+    border: 0;
+    color: #999;
+    background: #fff;
+}
+.free-confirm-cancel:hover {
+    color: #108ee9;
+}

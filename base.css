@@ -1,0 +1,57 @@
+@import url("http://at.alicdn.com/t/font_hgpzji1mssckgldi.css");
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-size: 14px;
+    outline: 0;
+}
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+/* text input */
+input.free {
+    padding: 4px 7px;
+    height: 30px;
+    line-height: 30px;
+    color: rgba(0, 0, 0, 0.65);
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    width: 150px;
+    font-size: 12px;
+}
+input.free:focus {
+    box-shadow: 0 0 0 2px rgba(16,142,233,.2);
+    border-color: #66afe9;
+}
+input.free:hover {
+    border-color: #66afe9;
+}
+
+/* button */
+button.free {
+    width: 80px;
+    height: 30px;
+    line-height: 1.5;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #fff;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.65);
+    font-size: 12px;
+}
+button.free.primary {
+    background-color: #337ab7;
+    color: #fff;
+    border-color: #337ab7;
+}
+button.free.primary:hover {
+    background-color: #0288D1;
+    border-color: #0288D1;
+}
+button.free.default:hover {
+    background-color: #eee;
+    color: #666;
+    border-color: #eee;
+}
