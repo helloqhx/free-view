@@ -36,7 +36,7 @@
         $wrapper.appendTo('body');
 
         if(opts['containerClass']) $container.addClass(opts['containerClass']);
-        
+
         _bind(opts);
     }
 

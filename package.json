@@ -1,0 +1,13 @@
+{
+    "name": "free-views",
+    "version": "0.0.1",
+    "description": "A few free juqery based frontend UI components",
+    "scripts": {
+    },
+    "devDependencies": {
+      "css-loader": "^0.28.4",
+      "style-loader": "^0.18.2",
+      "uglifyjs-webpack-plugin": "^0.4.6",
+      "webpack": "^3.0.0"
+  }
+}
