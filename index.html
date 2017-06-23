@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" type="text/css" href="dist/styles.min.css">
+        <link rel="stylesheet" type="text/css" href="dist/free.min.css">
         <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
     </head>
     <style type="text/css">
@@ -45,6 +45,10 @@
                 <legend>Confirm</legend>
                 <button class="free primary" onclick="openConfirm()">confirm</button>
             </fieldset>
+            <fieldset>
+                <legend>Table</legend>
+                <div id="free-table"></div>
+            </fieldset>
         </div>
     </body>
     <script src="dist/free.min.js"></script>
@@ -77,5 +81,23 @@
                 }
             });
         }
+        $(function() {
+            $('#free-table').table({
+                'columns': [
+                    {'key': 'no', 'name': 'Student No.', 'width': 120},
+                    {'key': 'name', 'name': 'Student Name', 'width': 120},
+                    {'key': 'sex', 'name': 'Gender', 'width': 120},
+                    {'key': 'grade', 'name': 'Student Grade', 'width': 120},
+                    {'key': 'comment', 'name': 'Comment', 'width': 120}
+                ],
+                'data': [
+                    {'no': '08300240001', 'name': 'Henson', 'sex': 'Male', 'grade': 100, 'comment': 'Best one'},
+                    {'no': '08300240002', 'name': 'Tommon', 'sex': 'Male', 'grade': 90, 'comment': ' one'},
+                    {'no': '08300240003', 'name': 'White', 'sex': 'Male', 'grade': 80, 'comment': ''},
+                    {'no': '08300240004', 'name': 'Johon', 'sex': 'Female', 'grade': 60, 'comment': 'oh the one'},
+                    {'no': '08300240005', 'name': 'Sam', 'sex': 'Male', 'grade': 40, 'comment': 'Last one'},
+                ]
+            });
+        });
     </script>
 </html>
