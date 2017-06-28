@@ -61,7 +61,6 @@
     };
 
     $.fn.popbox = function(config) {
-        $('.free-popbox-wrapper').remove();
         var opts = $.extend({}, _defaults, config);
         var _self = $(this);
 
@@ -75,28 +74,31 @@
         $anchor.addClass(opts['position']);
 
         setTimeout(function() {
-            $('body').on('click', closeWrapper);
-        }, 0)
+            $('body').one('click', function(e) {
+                close();
+            });
+        }, 0);
 
+        $container.on('click', function() {
+            return false;
+        });
 
-        function closeWrapper(e) {
-            if($(e.target).parents('.free-popbox-wrapper').length) return;
-            close();
-        }
+        var target = {
+            'close': close,
+            'repin': repin
+        };
 
         function close() {
-            if(typeof opts['onClose'] === 'function') opts['onClose']();
+            if(typeof opts['onClose'] === 'function') opts['onClose'](target);
             $wrapper.remove();
-            $('body').off('click', closeWrapper);
         }
 
         function repin() {
             $container.css(_css[opts['position']](_self, $content));
         }
 
-        return {
-            'close': close,
-            'repin': repin
-        }
+        if(typeof opts['onShow'] === 'function') opts['onShow'](target);
+
+        return target;
     };
 })();
