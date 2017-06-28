@@ -49,12 +49,12 @@
             if(typeof args[1] === 'number') {
                 obj['duration'] = parseInt(args[1]);
             } else {
-                obj['title'] = args[1] || '';
+                obj['title'] = args[1] || obj['title'];
             }
         }
 
         if(args.length === 3) {
-            obj['title'] = args[1] || '';
+            obj['title'] = args[1] || obj['title'];
             obj['duration'] = parseInt(args[2]) || _defaultDuration;
         }
 

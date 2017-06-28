@@ -28,18 +28,15 @@
             }
         });
 
-        if(typeof opts['ok'] === 'function') {
-            $footer.find('button.free-confirm-ok').one('click', function() {
-                $dialog.close();
-                opts['ok']();
-            });
-        }
-        if(typeof opts['cancel'] === 'function') {
-            $footer.find('button.free-confirm-cancel').one('click', function() {
-                $dialog.close();
-                opts['cancel']();
-            });
-        }
+        $footer.find('button.free-confirm-ok').one('click', function() {
+            $dialog.close();
+            (typeof opts['ok'] === 'function') && opts['ok']();
+        });
+        
+        $footer.find('button.free-confirm-cancel').one('click', function() {
+            $dialog.close();
+            (typeof opts['cancel'] === 'function') && opts['cancel']();
+        });
     }
 
     $.extend(true, window, {'free': {'confirm': confirm}});

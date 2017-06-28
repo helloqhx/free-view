@@ -16,7 +16,7 @@
 		}
 
 		opts.$tableBox.css('width', w + 'px');
-		opts.$infoBox.css('width', w + 'px');
+		opts.info && opts.$infoBox.css('width', w + 'px');
 		return html.join('');
 	}
 
@@ -101,7 +101,7 @@
 			}
 
 			makeTable(opts, items);
-			updateInfo(opts, (page + 1), Math.ceil(total / PAGE_SIZE), total);
+			opts['info'] && updateInfo(opts, (page + 1), Math.ceil(total / PAGE_SIZE), total);
 			if(!pagination || total <= PAGE_SIZE) opts.$pageBox.hide();
 			else if(isFreshCall) showPagination(opts, total);
 
@@ -130,6 +130,7 @@
 			'url': '',
 			'params': null,
 			'data': [],
+			'info': true,
 			'$infoBox': $infoBox,
 			'$tableBox': $tableBox,
 			'$pageBox': $pageBox,
@@ -143,7 +144,9 @@
             opts.data = options.data;
         }
 
-		$self.addClass('free-table-container').append($infoBox).append($tableBox);
+		$self.addClass('free-table-container');
+		if(opts.info) $self.append($infoBox);
+		$self.append($tableBox);
 		if(opts.pagination) $self.append($pageBox);
 		else $infoBox.find('.page-info').hide();
 
@@ -153,7 +156,7 @@
 			getPage(opts, true);
 		} else if(opts['data']) {
 			makeTable(opts, opts['data']);
-			updateInfo(opts, 1, 1, opts['data'].length);
+			opts['info'] && updateInfo(opts, 1, 1, opts['data'].length);
 		}
 
 		return {
