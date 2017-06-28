@@ -22,6 +22,9 @@
         legend {
             color: rgba(0, 0, 0, 0.65);
         }
+        .content {
+            padding: 10px;
+        }
     </style>
     <body>
         <div class="body">
@@ -43,14 +46,21 @@
             </fieldset>
             <fieldset>
                 <legend>Notification</legend>
-                <button class="free default" onclick="notySuccess()">success</button>
-                <button class="free default" onclick="notyInfo()">info</button>
-                <button class="free default" onclick="notyError()">error</button>
-                <button class="free default" onclick="notyWarn()">warn</button>
+                <button class="free default" onclick="noty('success', '更新成功')">success</button>
+                <button class="free default" onclick="noty('info', '展示信息')">info</button>
+                <button class="free default" onclick="noty('error', '服务器错误')">error</button>
+                <button class="free default" onclick="noty('warn', '这是个警告')">warn</button>
             </fieldset>
             <fieldset>
                 <legend>Confirm</legend>
                 <button class="free primary" onclick="openConfirm()">confirm</button>
+            </fieldset>
+            <fieldset>
+                <legend>Pop out box</legend>
+                <button class="free default" onclick="popbox(this, 'top')">top</button>
+                <button class="free default" onclick="popbox(this, 'right')">right</button>
+                <button class="free default" onclick="popbox(this, 'left')">left</button>
+                <button class="free default" onclick="popbox(this, 'bottom')">bottom</button>
             </fieldset>
             <fieldset>
                 <legend>Table</legend>
@@ -63,17 +73,16 @@
         function openDialog() {
             free.dialog({'title': '详细信息', 'content': "Something...</br>Something...</br>Something...</br>"});
         }
-        function notySuccess() {
-            free.noty.success('更新成功');
+
+        function popbox(self, pos) {
+            $(self).popbox({
+                'content': '<div class="content">hello world</div>',
+                'position': pos
+            });
         }
-        function notyError() {
-            free.noty.error('服务器错误');
-        }
-        function notyWarn() {
-            free.noty.warn('这是个警告');
-        }
-        function notyInfo() {
-            free.noty.info('展示信息');
+
+        function noty(type, message) {
+            free.noty[type](message);
         }
 
         function openConfirm() {

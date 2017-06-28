@@ -1,0 +1,94 @@
+.free-popbox-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+.free-popbox-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1051;
+}
+.free-popbox-content {
+    min-width: 100px;
+    min-height: 40px;
+    background-color: #fff;
+    background-clip: padding-box;
+    border-radius: 4px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.3);
+    color: rgba(0, 0, 0, 0.65);
+    font-size: 12px;
+}
+.free-popbox-anchor, .free-popbox-anchor:after {
+    position: absolute;
+    display: block;
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    border-style: solid;
+}
+.free-popbox-anchor.top {
+    left: 50%;
+    margin-left: -8px;
+    bottom: -8px;
+    border-bottom: 0;
+    border-width: 8px;
+    border-top-color: hsla(0,0%,85%,.7) !important;
+}
+.free-popbox-anchor.top:after {
+    content: "";
+    border-width: 7px;
+    bottom: 1px;
+    margin-left: -7px;
+    border-bottom-width: 0;
+    border-top-color: #fff;
+}
+.free-popbox-anchor.right {
+    top: 50%;
+    margin-top: -8px;
+    left: -8px;
+    border-left: 0;
+    border-width: 8px;
+    border-right-color: hsla(0,0%,85%,.7) !important;
+}
+.free-popbox-anchor.right:after {
+    content: "";
+    border-width: 7px;
+    left: 1px;
+    margin-top: -7px;
+    border-left-width: 0;
+    border-right-color: #fff;
+}
+.free-popbox-anchor.left {
+    top: 50%;
+    margin-top: -8px;
+    right: -8px;
+    border-right: 0;
+    border-width: 8px;
+    border-left-color: hsla(0,0%,85%,.7) !important;
+}
+.free-popbox-anchor.left:after {
+    content: "";
+    border-width: 7px;
+    right: 1px;
+    margin-top: -7px;
+    border-right-width: 0;
+    border-left-color: #fff;
+}
+.free-popbox-anchor.bottom {
+    left: 50%;
+    top: -8px;
+    margin-left: -8px;
+    border-top: 0;
+    border-width: 8px;
+    border-bottom-color: hsla(0,0%,85%,.7) !important;
+}
+.free-popbox-anchor.bottom:after {
+    content: "";
+    border-width: 7px;
+    top: 1px;
+    margin-left: -7px;
+    border-top-width: 0;
+    border-bottom-color: #fff;
+}
