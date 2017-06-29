@@ -1,0 +1,42 @@
+.free-alert-box {
+    width: 350px !important;
+}
+
+.free-alert-content {
+    font-size: 13px;
+}
+.free-alert-title {
+    font-weight: 500;
+    height: 24px;
+    line-height: 24px;
+}
+.free-alert-title .icon {
+    color: #666;
+    font-style: normal;
+    margin-right: 5px;
+}
+.free-alert-title .icon:before {
+    content: '\E602';
+    font-family: 'iconfont';
+    font-size: 20px;
+    vertical-align: middle;
+}
+
+.free-alert-btns button {
+    width: 60px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.free-alert-ok {
+    background: #108ee9;
+    border: 1px solid #108ee9;
+    color: #fff;
+    border-radius: 3px;
+}
+.free-alert-ok:hover {
+    color: #fff;
+    background-color: #49a9ee;
+    border-color: #49a9ee;
+}

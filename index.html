@@ -52,8 +52,9 @@
                 <button class="free default" onclick="noty('warn', '这是个警告')">warn</button>
             </fieldset>
             <fieldset>
-                <legend>Confirm</legend>
-                <button class="free primary" onclick="openConfirm()">confirm</button>
+                <legend>Alert &amp; Confirm</legend>
+                <button class="free default" onclick="openAlert()">alert</button>
+                <button class="free default" onclick="openConfirm()">confirm</button>
             </fieldset>
             <fieldset>
                 <legend>Pop out box</legend>
@@ -83,6 +84,10 @@
 
         function noty(type, message) {
             free.noty[type](message);
+        }
+
+        function openAlert() {
+            free.alert('hello world');
         }
 
         function openConfirm() {
