@@ -1,8 +1,22 @@
 (function($) {
-	var PAGE_SIZE = 30;
+	var PAGE_SIZE = 30, MIN_WIDTH = 80, SELECT_BOX_WIDTH = 35;
+	var _defaults = {
+		'pagination': false,
+		'columns': [],  // name, width, key
+		'url': '',
+		'params': null,
+		'data': [],
+		'info': true,
+		'selectale': false,
+		'onLoad': function(){}
+	};
+
 	function makeThead(opts, columns) {
 		var column, width, html = [];
 		var w = 0;
+		if(opts['selectale']) {
+			html.push('<th class="free-table-selector"><input type="checkbox"/></th>')
+		}
 		for(var i = 0, len = columns.length; i < len; i ++) {
 			column = columns[i];
 			width = column['width'];
@@ -12,42 +26,46 @@
 				html.push('<th>' + column['name'] + '</th>');
 			}
 
-			w += width || 100;
+			w += width || MIN_WIDTH;
 		}
 
+		if(opts.selectale) w += SELECT_BOX_WIDTH;
 		opts.$tableBox.css('width', w + 'px');
 		opts.info && opts.$infoBox.css('width', w + 'px');
 		return html.join('');
 	}
 
-	function makeTr(columns, item) {
-		var key, $td;
-		var $tr = $('<tr></tr>');
-		for(var i = 0, len = columns.length; i < len; i ++) {
-			key = columns[i]['key'];
-			$td = $('<td x-index="' + i + '"></td>');
+	function makeTr(columns, item, opts) {
+		var key, useHtml, td, text;
+		var html = [];
 
-			if($.isFunction(key)) {
-				var text = key(item) + '';  // conver to string
-				if(text.startsWith('<td') && text.endsWith('</td>')) {
-                    $td = $(text);
-                }else {
-                    $td.text(text);
-                }
-			} else if(typeof key === 'string') {
-				$td.text(item[key]);
-			}
-
-			$tr.append($td);
+		if(opts['selectale']) {
+			html.push('<td class="free-table-selector"><input type="checkbox"/></td>');
 		}
 
-		return $tr;
+		for(var i = 0, len = columns.length; i < len; i ++) {
+			key = columns[i]['key'];
+
+			if(typeof key === 'function') {
+				text = key(item) + '';  // conver to string
+			} else if(typeof key === 'string') {
+				text = item[key];
+			} else {
+				text = '';
+			}
+
+			td = columns[i]['escape'] ? $('<i/>').text(text).html() : text;
+			html.push('<td>' + td + '</td>');
+		}
+
+		return '<tr>' + html.join('') + '</tr>';
 	}
 
-	function makeTbody(columns, items) {
+	function makeTbody(columns, items, opts) {
 		var html = [];
+
 		for(var i = 0, len = items.length; i < len; i ++) {
-			html.push(makeTr(columns, items[i]));
+			html.push(makeTr(columns, items[i], opts));
 		}
 
 		return html;
@@ -71,7 +89,7 @@
         $tbody.empty();
 
 		if(items.length > 0) {
-            $tbody.append(makeTbody(opts['columns'], items));
+            $tbody.append(makeTbody(opts['columns'], items, opts));
 			$tbody.find('tr').each(function(index) {
 				$(this).data('item', items[index]);
 			});
@@ -118,31 +136,48 @@
 		opts.$infoBox.find('span.sum').text(total);
 	}
 
+	function _bind($self, opts) {
+		if(opts['selectale']) {
+			$self.find('th.free-table-selector > input').on('change', function() {
+				var checked = $(this).prop('checked');
+				$self.find('tbody td.free-table-selector > input').prop('checked', checked);
+				checked ? $self.find('tbody tr').addClass('selected') : $self.find('tbody tr').removeClass('selected');
+			});
+
+			$self.find('td.free-table-selector > input').on('change', function() {
+				$(this).prop('checked') ?
+					$(this).parents('tr').addClass('selected') :
+					$(this).parents('tr').removeClass('selected');
+
+				var unSelected = $self.find('tbody tr:not(.selected)');
+				$self.find('th.free-table-selector input').prop('checked', unSelected.length === 0);
+				if(typeof opts['onSelectChange'] === 'function') {
+					opts['onSelectChange']();
+				}
+			});
+		}
+	}
+
 	$.fn.table = function(options) {
 		var $self = this;
 		var $infoBox = $('<div class="info-box"><span class="page-info">第&nbsp;<span class="page-num">1</span>&nbsp;页，共&nbsp;<span class="page-sum"></span>&nbsp;页，</span>总共&nbsp;<span class="sum"></span>&nbsp;条数据</div>'),
 			$tableBox = $('<div class="table-box"><table><thead></thead><tbody></tbody></table></div>'),
 			$pageBox = $('<div class="page-box"></div>');
 
-		var opts = {
-			'pagination': false,
-			'columns': [],  // name, width, key
-			'url': '',
-			'params': null,
-			'data': [],
-			'info': true,
+		// do not copy data
+		var d = options['data'];
+		delete options['data'];
+
+		var opts = $.extend(true, {
 			'$infoBox': $infoBox,
 			'$tableBox': $tableBox,
-			'$pageBox': $pageBox,
-            'onLoad': function(){}
-		};
+			'$pageBox': $pageBox
+		}, _defaults, options);
 
-		$.extend(true, opts, options);
-
-        // use original data not copied
-        if(options.data) {
-            opts.data = options.data;
-        }
+		if(d) {
+			opts['data'] = d;
+			options['data'] = d;
+		}
 
 		$self.addClass('free-table-container');
 		if(opts.info) $self.append($infoBox);
@@ -150,7 +185,7 @@
 		if(opts.pagination) $self.append($pageBox);
 		else $infoBox.find('.page-info').hide();
 
-		$tableBox.css('min-width', (opts['columns'].length * 100) + 'px');  // add min width
+		$tableBox.css('min-width', (opts['columns'].length * MIN_WIDTH) + 'px');  // add min width
 		$tableBox.find('thead').append(makeThead(opts, opts['columns']));
 		if(opts.url) {
 			getPage(opts, true);
@@ -158,6 +193,8 @@
 			makeTable(opts, opts['data']);
 			opts['info'] && updateInfo(opts, 1, 1, opts['data'].length);
 		}
+
+		_bind($self, opts);
 
 		return {
 			'refresh': function() {
@@ -185,6 +222,21 @@
 			'setParams': function(ps) {
 				opts.params = ps;
 				getPage(opts, true)
+			},
+			'getSelected': function() {
+				var $trs = $tableBox.find('tr.selected');
+				var items = [];
+				$trs.each(function($tr) {
+					items.push($tr.data('item'));
+				});
+
+				return {
+					'rows': $trs,
+					'items': items
+				};
+			},
+			'isSelected': function(rowIndex) {
+				return $tableBox.find('tr:eq(' + rowIndex + ')').hasClass('selected');
 			}
 		};
 	};

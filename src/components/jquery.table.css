@@ -39,6 +39,18 @@
 	word-break: break-word;
 	word-wrap: break-word;
 }
+/* selector checkbox */
+.free-table-selector {
+	width: 35px;
+	vertical-align: middle;
+}
+.free-table-container tbody > tr.selected {
+	background-color: #009688;
+	color: #fff;
+}
+.free-table-container tbody > tr.selected > td {
+	border-color: #009688;
+}
 /* pagination css */
 .free-table-container .page-box {
 	text-align: center;
