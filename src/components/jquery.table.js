@@ -7,14 +7,14 @@
 		'params': null,
 		'data': [],
 		'info': true,
-		'selectale': false,
+		'selectable': false,
 		'onLoad': function(){}
 	};
 
 	function makeThead(opts, columns) {
 		var column, width, html = [];
 		var w = 0;
-		if(opts['selectale']) {
+		if(opts['selectable']) {
 			html.push('<th class="free-table-selector"><input type="checkbox"/></th>')
 		}
 		for(var i = 0, len = columns.length; i < len; i ++) {
@@ -29,22 +29,23 @@
 			w += width || MIN_WIDTH;
 		}
 
-		if(opts.selectale) w += SELECT_BOX_WIDTH;
+		if(opts.selectable) w += SELECT_BOX_WIDTH;
 		opts.$tableBox.css('width', w + 'px');
 		opts.info && opts.$infoBox.css('width', w + 'px');
 		return html.join('');
 	}
 
 	function makeTr(columns, item, opts) {
-		var key, useHtml, td, text;
+		var key, td, text, col;
 		var html = [];
 
-		if(opts['selectale']) {
+		if(opts['selectable']) {
 			html.push('<td class="free-table-selector"><input type="checkbox"/></td>');
 		}
 
 		for(var i = 0, len = columns.length; i < len; i ++) {
-			key = columns[i]['key'];
+			col = columns[i];
+			key = col['key'];
 
 			if(typeof key === 'function') {
 				text = key(item) + '';  // conver to string
@@ -54,8 +55,13 @@
 				text = '';
 			}
 
-			td = columns[i]['escape'] ? $('<i/>').text(text).html() : text;
-			html.push('<td>' + td + '</td>');
+			td = col['escape'] ? $('<i/>').text(text).html() : text;
+			if(col['cssClass']) {
+				td = '<td class="' + col['cssClass'] + '">' + td + '</td>';
+			} else {
+				td = '<td>' + td + '</td>';
+			}
+			html.push(td);
 		}
 
 		return '<tr>' + html.join('') + '</tr>';
@@ -137,20 +143,19 @@
 	}
 
 	function _bind($self, opts) {
-		if(opts['selectale']) {
-			$self.find('th.free-table-selector > input').on('change', function() {
+		var $table = opts.$tableBox;
+		if(opts['selectable']) {
+			$table.find('th.free-table-selector > input').on('change', function() {
 				var checked = $(this).prop('checked');
-				$self.find('tbody td.free-table-selector > input').prop('checked', checked);
-				checked ? $self.find('tbody tr').addClass('selected') : $self.find('tbody tr').removeClass('selected');
+				$table.find('tbody td.free-table-selector > input').prop('checked', checked);
+				checked ? $table.find('tbody tr').addClass('selected') : $table.find('tbody tr').removeClass('selected');
 			});
 
-			$self.find('td.free-table-selector > input').on('change', function() {
-				$(this).prop('checked') ?
-					$(this).parents('tr').addClass('selected') :
-					$(this).parents('tr').removeClass('selected');
+			$table.on('change', 'td.free-table-selector > input', function() {
+				$(this).parents('tr').toggleClass('selected');
 
-				var unSelected = $self.find('tbody tr:not(.selected)');
-				$self.find('th.free-table-selector input').prop('checked', unSelected.length === 0);
+				var unSelected = $table.find('tbody tr:not(.selected)');
+				$table.find('th.free-table-selector input').prop('checked', unSelected.length === 0);
 				if(typeof opts['onSelectChange'] === 'function') {
 					opts['onSelectChange']();
 				}
@@ -226,8 +231,8 @@
 			'getSelected': function() {
 				var $trs = $tableBox.find('tr.selected');
 				var items = [];
-				$trs.each(function($tr) {
-					items.push($tr.data('item'));
+				$trs.each(function(index, tr) {
+					items.push($(tr).data('item'));
 				});
 
 				return {
