@@ -220,11 +220,13 @@
 	function _setTableWidth($table, opts) {
 		var w = 0, columns = opts['columns'];
 
+		if(opts.selectable) w += SELECT_BOX_WIDTH;
 		for(var i = 0, len = columns.length; i < len; i ++) {
 			if(!columns[i]['hide']) w += columns[i]['width'] || MIN_WIDTH;
 		}
 
 		$table.css('width', w);
+		opts.info && opts.$infoBox.css('width', w);
 	}
 
 	$.fn.table = function(options) {
