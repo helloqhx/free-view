@@ -13,7 +13,6 @@
 
 	function makeThead(opts, columns) {
 		var column, width, html = [];
-		var w = 0;
 		if(opts['selectable']) {
 			html.push('<th class="free-table-selector"><input type="checkbox"/></th>')
 		}
@@ -23,22 +22,13 @@
 			column = columns[i];
 			if(null == column['id']) throw 'Each column must have an unique id';
 			colMap[column['id']] = column;
-			width = column['width'];
+			width = column['width'] || MIN_WIDTH;
 			cssClass = '';
 			if(column['hide']) cssClass += 'hide';
 
-			if(width) {
-				html.push('<th class="' + cssClass + '" x-id=' + column['id'] + ' width="' + width + 'px">' + column['name'] + '</th>');
-			} else {
-				html.push('<th class="' + cssClass + '" x-id=' + column['id'] + '>' + column['name'] + '</th>');
-			}
-
-			w += width || MIN_WIDTH;
+			html.push('<th class="' + cssClass + '" x-id=' + column['id'] + ' width="' + width + 'px">' + column['name'] + '</th>');
 		}
 
-		if(opts.selectable) w += SELECT_BOX_WIDTH;
-		opts.$tableBox.css('width', w + 'px');
-		opts.info && opts.$infoBox.css('width', w + 'px');
 		opts['colMap'] = colMap;
 		return html.join('');
 	}
@@ -185,9 +175,9 @@
 		// hide & show columns
 		$table.find('thead').on('contextmenu', function(e) {
 			e.preventDefault();
-			$self.find('.header-menu').remove();
-			var $contextmenu = $('<div class="header-menu"></div>');
-			$contextmenu.appendTo($self);
+			$('.free-table-header-menu').remove();
+			var $contextmenu = $('<div class="free-table-header-menu"></div>');
+			$contextmenu.appendTo('body');
 			var x = e.pageX, y = e.pageY;
 			$contextmenu.css({
 				'top': y,
@@ -222,8 +212,19 @@
 				var $tds = $('tbody > tr > td:nth-child(' + colIdx + ')');
 				col.toggleClass('hide');
 				$tds.toggleClass('hide');
+				_setTableWidth($table, opts);
 			});
 		});
+	}
+
+	function _setTableWidth($table, opts) {
+		var w = 0, columns = opts['columns'];
+
+		for(var i = 0, len = columns.length; i < len; i ++) {
+			if(!columns[i]['hide']) w += columns[i]['width'] || MIN_WIDTH;
+		}
+
+		$table.css('width', w);
 	}
 
 	$.fn.table = function(options) {
@@ -253,7 +254,7 @@
 		if(opts.pagination) $self.append($pageBox);
 		else $infoBox.find('.page-info').hide();
 
-		$tableBox.css('min-width', (opts['columns'].length * MIN_WIDTH) + 'px');  // add min width
+		_setTableWidth($tableBox, opts);
 		$tableBox.find('thead').append(makeThead(opts, opts['columns']));
 		if(opts.url) {
 			getPage(opts, true);
