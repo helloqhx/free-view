@@ -109,11 +109,11 @@
             $('#free-table').table({
                 'selectable': true,
                 'columns': [
-                    {'key': 'no', 'name': 'Student No.', 'width': 120, 'escape': true},
-                    {'key': 'name', 'name': 'Student Name', 'width': 120},
-                    {'key': 'sex', 'name': 'Gender', 'width': 120},
-                    {'key': 'grade', 'name': 'Student Grade', 'width': 120},
-                    {'key': 'comment', 'name': 'Comment', 'width': 120}
+                    {'id': 'no', 'name': 'Student No.', 'width': 120, 'escape': true},
+                    {'id': 'name', 'name': 'Student Name', 'width': 120},
+                    {'id': 'sex', 'name': 'Gender', 'width': 120, 'cssClass': "red"},
+                    {'id': 'grade', 'name': 'Student Grade', 'width': 120, 'hide': true},
+                    {'id': 'comment', 'name': 'Comment', 'width': 120}
                 ],
                 'data': [
                     {'no': '08300240001', 'name': 'Henson', 'sex': 'Male', 'grade': 100, 'comment': 'Best one'},

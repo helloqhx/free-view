@@ -2,7 +2,7 @@
 	var PAGE_SIZE = 30, MIN_WIDTH = 80, SELECT_BOX_WIDTH = 35;
 	var _defaults = {
 		'pagination': false,
-		'columns': [],  // name, width, key
+		'columns': [],  // name, width, id, formatter
 		'url': '',
 		'params': null,
 		'data': [],
@@ -17,13 +17,20 @@
 		if(opts['selectable']) {
 			html.push('<th class="free-table-selector"><input type="checkbox"/></th>')
 		}
+		var cssClass;
+		var colMap = {};
 		for(var i = 0, len = columns.length; i < len; i ++) {
 			column = columns[i];
+			if(null == column['id']) throw 'Each column must have an unique id';
+			colMap[column['id']] = column;
 			width = column['width'];
+			cssClass = '';
+			if(column['hide']) cssClass += 'hide';
+
 			if(width) {
-				html.push('<th width="' + width + 'px">' + column['name'] + '</th>');
+				html.push('<th class="' + cssClass + '" x-id=' + column['id'] + ' width="' + width + 'px">' + column['name'] + '</th>');
 			} else {
-				html.push('<th>' + column['name'] + '</th>');
+				html.push('<th class="' + cssClass + '" x-id=' + column['id'] + '>' + column['name'] + '</th>');
 			}
 
 			w += width || MIN_WIDTH;
@@ -32,32 +39,37 @@
 		if(opts.selectable) w += SELECT_BOX_WIDTH;
 		opts.$tableBox.css('width', w + 'px');
 		opts.info && opts.$infoBox.css('width', w + 'px');
+		opts['colMap'] = colMap;
 		return html.join('');
 	}
 
 	function makeTr(columns, item, opts) {
-		var key, td, text, col;
 		var html = [];
 
 		if(opts['selectable']) {
 			html.push('<td class="free-table-selector"><input type="checkbox"/></td>');
 		}
 
+		var td, col, colId, formatter, cssClass;
 		for(var i = 0, len = columns.length; i < len; i ++) {
 			col = columns[i];
-			key = col['key'];
+			colId = col['id'];
+			formatter = col['formatter'];
 
-			if(typeof key === 'function') {
-				text = key(item) + '';  // conver to string
-			} else if(typeof key === 'string') {
-				text = item[key];
+			if(typeof formatter === 'function') {
+				text = formatter(item) + '';  // conver to string
 			} else {
-				text = '';
+				text = item[col['id']] || '';
 			}
 
 			td = col['escape'] ? $('<i/>').text(text).html() : text;
+			cssClass = col['hide'] ? 'hide' : '';
+
 			if(col['cssClass']) {
-				td = '<td class="' + col['cssClass'] + '">' + td + '</td>';
+				cssClass += ' ' + col['cssClass'];
+			}
+			if(cssClass) {
+				td = '<td class=' + cssClass + '>' + td + '</td>';
 			} else {
 				td = '<td>' + td + '</td>';
 			}
@@ -144,6 +156,8 @@
 
 	function _bind($self, opts) {
 		var $table = opts.$tableBox;
+
+		// selectable
 		if(opts['selectable']) {
 			$table.find('th.free-table-selector > input').on('change', function() {
 				var checked = $(this).prop('checked');
@@ -160,7 +174,56 @@
 					opts['onSelectChange']();
 				}
 			});
+
+			$table.on('click', '.free-table-selector', function(e) {
+				if($(e.target).is('input')) return;
+				var $input = $(this).find('input');
+				$input.prop('checked', !$input.prop('checked')).change();
+			});
 		}
+
+		// hide & show columns
+		$table.find('thead').on('contextmenu', function(e) {
+			e.preventDefault();
+			$self.find('.header-menu').remove();
+			var $contextmenu = $('<div class="header-menu"></div>');
+			$contextmenu.appendTo($self);
+			var x = e.pageX, y = e.pageY;
+			$contextmenu.css({
+				'top': y,
+				'left': x
+			});
+			var columns = opts['columns'];
+			var html = [];
+			for(var i = 0; i < columns.length; i ++) {
+				html.push('<div class="item" x-id="' + columns[i]['id'] + '"><input type="checkbox"' +
+					(columns[i]['hide'] ?  '' : 'checked') +
+					'/><span class="name">' + columns[i]['name'] + '</span></div>');
+			}
+			$contextmenu.append(html.join(''));
+
+			$contextmenu.on('click', '.item', function(e) {
+				if($(e.target).is('input')) return;
+				var $input = $(this).find('input');
+				$input.prop('checked', !$input.prop('checked')).change();
+			});
+			$contextmenu.on('click', function(e) {
+				e.stopPropagation();
+			});
+			$('body').one('click', function(e) {
+				$contextmenu.remove();
+			});
+			$contextmenu.on('change', '.item > input', function(e) {
+				var colId = $(this).parent().attr('x-id');
+				var col = $self.find('thead th[x-id=' + colId + ']');
+				opts.colMap[colId]['hide'] = !$(this).prop('checked');
+				var colIdx = col.index() + 1;
+
+				var $tds = $('tbody > tr > td:nth-child(' + colIdx + ')');
+				col.toggleClass('hide');
+				$tds.toggleClass('hide');
+			});
+		});
 	}
 
 	$.fn.table = function(options) {
