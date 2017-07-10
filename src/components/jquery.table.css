@@ -20,12 +20,25 @@
 	width: 100%;
 	color: #657180;
 	table-layout: fixed;
+	position: relative;
 }
 .free-table-container table thead {
 	font-weight: normal;
 	text-align: center;
 	line-height: 32px;
+}
+.free-table-container table thead {
+	background: #fff;
+}
+.free-table-container table thead th{
 	background: #f5f7f9;
+}
+.free-table-container table thead th.moving {
+	position: absolute;
+	box-shadow: 0 1px 6px rgba(0,0,0,.5);
+	border: 0;
+	z-index: 10;
+	border-radius: 3px;
 }
 .free-table-container table, .free-table-container table th, .free-table-container table td {
 	border-collapse: collapse;
@@ -140,4 +153,39 @@
 }
 .free-table-header-menu .name {
 	margin-left: 8px;
+}
+/* sort */
+.free-table-container table > thead > th > .sort-handler{
+	color: #9e9e9e;
+	float: right;
+	cursor: pointer;
+	font-size: 12px;
+	font-family: 'iconfont';
+	vertical-align: middle;
+}
+.free-table-container table > thead > th > .sort-handler:hover {
+	color: #666;
+}
+.free-table-container table > thead > th > .sort-handler:after {
+	content: '\E609';
+}
+.free-table-container table > thead > th > .sort-handler.sort-asc:after {
+	content: '\E603';
+}
+.free-table-container table > thead > th > .sort-handler.sort-desc:after {
+	content: '\E606';
+}
+/* reorder column */
+.free-table-container table > thead th.movable {
+	cursor: move;
+}
+/* resize column */
+.free-table-container table > thead > th > .resize-handler {
+	display: inline-block;
+	width: 4px;
+	margin-right: -2px;
+	float: right;
+	height: 33px;
+	background: transparent;
+	cursor: col-resize;
 }

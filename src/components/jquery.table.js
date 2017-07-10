@@ -1,14 +1,28 @@
 (function($) {
-	var PAGE_SIZE = 30, MIN_WIDTH = 80, SELECT_BOX_WIDTH = 35;
+	var SELECT_BOX_WIDTH = 35, THROTTLE_THRESHOLD = 100;
 	var _defaults = {
 		'pagination': false,
-		'columns': [],  // name, width, id, formatter
+		'columns': [],  // name, width, id, formatter, min_width
 		'url': '',
 		'params': null,
 		'data': [],
 		'info': true,
+		'minWidth': 80,
+		'pageSize': 30,
 		'selectable': false,
+		'enableColumnResize': false,
+		'enableColumnReorder': false,
 		'onLoad': function(){}
+	};
+
+	/* throttle en event handler */
+	var _throttle = function(fn) {
+		var prev = Date.now();
+		return function (e) {
+			if((Date.now() - prev) < THROTTLE_THRESHOLD) return;
+			fn.call(this, e);
+			prev = Date.now();
+		};
 	};
 
 	function makeThead(opts, columns) {
@@ -22,11 +36,20 @@
 			column = columns[i];
 			if(null == column['id']) throw 'Each column must have an unique id';
 			colMap[column['id']] = column;
-			width = column['width'] || MIN_WIDTH;
-			cssClass = '';
-			if(column['hide']) cssClass += 'hide';
+			column['min_width'] = column['min_width'] || opts['minWidth'];
+			width = column['width'] || column['min_width'];
 
-			html.push('<th class="' + cssClass + '" x-id=' + column['id'] + ' width="' + width + 'px">' + column['name'] + '</th>');
+			cssClass = '';
+			if(column['hide']) cssClass += ' hide';
+			if(opts['enableColumnReorder']) cssClass += ' movable';
+
+			cssClass = cssClass.trim();
+			html.push('<th class="' + cssClass + '" x-id=' + column['id']
+				+ ' width="' + width + 'px">'
+				+ '<span class="text">' + column['name'] + '</span>'
+				+ (opts['enableColumnResize'] ? '<span class="resize-handler"/>' : '')
+				+ (column['sort'] ? '<span class="sort-handler"/>' : '')
+				+ '</th>');
 		}
 
 		opts['colMap'] = colMap;
@@ -49,7 +72,7 @@
 			if(typeof formatter === 'function') {
 				text = formatter(item) + '';  // conver to string
 			} else {
-				text = item[col['id']] || '';
+				text = null == item[col['id']] ? '' : item[col['id']] + '';
 			}
 
 			td = col['escape'] ? $('<i/>').text(text).html() : text;
@@ -104,6 +127,8 @@
 		} else {
 			opts.$pageBox.hide();
 		}
+
+		_clear(opts.$tableBox);
 	}
 
 	function getPage(opts, isFreshCall, page) {
@@ -126,6 +151,8 @@
 				items = result['items'];
 			}
 
+			_preprocess(items);
+			opts.data = items;
 			makeTable(opts, items);
 			opts['info'] && updateInfo(opts, (page + 1), Math.ceil(total / PAGE_SIZE), total);
 			if(!pagination || total <= PAGE_SIZE) opts.$pageBox.hide();
@@ -215,6 +242,182 @@
 				_setTableWidth($table, opts);
 			});
 		});
+
+		// sort
+		$table.on('click', 'thead > th > .sort-handler', function() {
+			var $handler = $(this), colId = $handler.parent().attr('x-id');
+			// sort-asc -> sort-desc
+			if($handler.hasClass('sort-asc')) {
+				$handler.removeClass('sort-asc').addClass('sort-desc');
+				_sort(opts, colId, -1);
+			} else if($handler.hasClass('sort-desc')) {
+				$handler.removeClass('sort-desc sort-asc')
+				_sort(opts, 'free-index');
+			} else {
+				$table.find('thead > th > .sort-handler').removeClass('sort-asc sort-desc');
+				$handler.addClass('sort-asc');
+				_sort(opts, colId);
+			}
+		});
+
+		// drag & drop
+		if(opts['enableColumnReorder']) {
+			function next($th) {
+				var $next = $th.next();
+				while($next.length > 0 && $next.hasClass('hide')) $next = $next.next();
+				return $next;
+			}
+
+			function prev($th) {
+				var $prev = $th.prev();
+				while($prev.length > 0 && ($prev.hasClass('hide') || $prev.hasClass('free-table-selector'))) $prev = $prev.prev();
+				return $prev;
+			}
+
+			function update(info, $th) {
+				var $prev = prev($th), $next = next($th), offset = $table.offset();
+
+				info['prev'] = $prev;
+				info['next'] = $next;
+				info['left'] = $prev.length > 0 ? ($prev.offset()['left'] + ($prev.outerWidth() / 2) - offset['left']) : 0;
+				info['right'] = $next.length > 0 ? ($next.offset()['left'] - offset['left']) : $table.outerWidth();
+			}
+
+			function reorderHandler(e) {
+				var info = $table.find('thead').data('reorder-info');
+				var $th = info['$th'];
+				if(!$th.hasClass('moving')) $th.addClass('moving');
+				var offsetLeft = info['offset']['left'] +  e.clientX - info['eX'] - info['tableOffset']['left'];
+				if(offsetLeft < info['leftMost']) offsetLeft = info['leftMost'];
+				if(offsetLeft > info['rightMost']) offsetLeft = info['rightMost'];
+
+				var $prev = info['prev'], $next = info['next'];
+				if(offsetLeft < info['left'] && $prev.length > 0) {
+					$prev.before($th.detach());
+					update(info, $th);
+				} else if(offsetLeft > info['right'] && $next.length > 0) {
+					$next.after($th.detach());
+					update(info, $th);
+				}
+
+				$th.css('left', offsetLeft);
+			}
+
+			$table.find('thead > th.movable').on('mousedown', function(e) {
+				if($(e.target).hasClass('sort-handler') || $(e.target).hasClass('resize-handler')) return;
+				e.preventDefault();
+				var $th = $(this);
+				var info = {
+					'$th': $th,
+					'index': $th.index(),
+					'eX': e.clientX,
+					'eY': e.clientY,
+					'tableOffset': $table.offset(),
+					'offset': $th.offset(),
+					'leftMost': -$th.outerWidth(),
+					'rightMost': $table.outerWidth() + 10
+				};
+				update(info, $th);
+
+				$th.parent().data('reorder-info', info);
+				var moveHandler = _throttle(reorderHandler);
+				$(document).on('mousemove', moveHandler);
+				$(document).one('mouseup', function(e) {
+					var $head = $table.find('thead'), info = $head.data('reorder-info');
+					var $th = info['$th'], delta = info['delta'];
+
+					_reorderColumn(opts, info['index'] - 1, $th.index() - 1);
+
+					$head.data('reorder-info', null);
+					$th.removeClass('moving');
+					$(document).off('mousemove', moveHandler);
+				});
+			});
+		}
+
+		// resize column width
+		if(opts['enableColumnResize']) {
+			function resizeHandler(e) {
+				var info = $table.find('thead').data('resize-info'),
+					$th = info['$th'], minW = opts['colMap'][$th.attr('x-id')]['min_width'],
+					x = e.clientX,
+					delta = x - info['eX'];
+
+				var w = info['width'] + delta;
+				if(w < minW) w = minW;
+				$th.width(w);
+				$table.width(info['tableWidth'] + (w - info['width']));
+				opts['info'] && opts.$infoBox.width(info['infoWidth'] + (w - info['width']));
+			}
+
+			$table.on('mousedown', 'thead > th > .resize-handler', function(e) {
+				e.preventDefault();
+				var $th = $(this).parent();
+				$table.find('thead').data('resize-info', {
+					'$th': $th,
+					'width': $th.width(),
+					'tableWidth': $table.width(),
+					'infoWidth': opts.$infoBox.width(),
+					'eX': e.clientX
+				});
+				var handler = _throttle(resizeHandler);
+				$(document).on('mousemove', handler);
+				$(document).one('mouseup', function(e) {
+					$(document).off('mousemove', handler);
+				});
+			});
+		}
+	}
+
+	function _reorderColumn(opts, srcIndex, destIndex) {
+		if(srcIndex === destIndex) return;
+		var columns = opts['columns'], column = columns[srcIndex];
+		columns.splice(srcIndex, 1);
+		columns.splice(destIndex, 0, column);
+
+		if(opts['selectable']) {
+			srcIndex += 1;
+			destIndex += 1;
+		}
+		opts.$tableBox.find('tbody > tr').each(function(index, tr) {
+			var $tr = $(tr), $tds = $tr.find('td').detach(), $td = $tds[srcIndex];
+			$tds.splice(srcIndex, 1);
+			$tds.splice(destIndex, 0, $td);
+			$(tr).empty().append($tds);
+		});
+	}
+
+	function _sort(opts, colId, order) {
+		order = order || 1;
+		var $trs = opts.$tableBox.find('tbody > tr').detach();
+		$trs.sort(function(a, b) {
+			var da = $(a).data('item')[colId], db = $(b).data('item')[colId];
+			if(typeof da === 'number' && typeof db === 'number') return order * (da - db);
+
+			da += '';
+			db += '';
+
+			var result = 0;
+			if(da < db) result =  -1;
+			else if(da > db) result = 1;
+
+			return result * order;
+		});
+
+		opts.$tableBox.find('tbody').append($trs);
+	}
+
+	function _preprocess(data) {
+		for(var i = 0, len = data.length; i < len; i ++) {
+			data[i]['free-index'] = i;  // add initial index to restore order
+		}
+
+		return data;
+	}
+
+	function _clear($table) {
+		$table.find('th.free-table-selector input').prop('checked', false);
+		$table.find('th > .sort-handler').removeClass('sort-asc sort-desc');
 	}
 
 	function _setTableWidth($table, opts) {
@@ -261,7 +464,7 @@
 		if(opts.url) {
 			getPage(opts, true);
 		} else if(opts['data']) {
-			makeTable(opts, opts['data']);
+			makeTable(opts, _preprocess(opts['data']));
 			opts['info'] && updateInfo(opts, 1, 1, opts['data'].length);
 		}
 
@@ -286,6 +489,7 @@
 				} else {
 					$tr.before($target);
 				}
+				_clear($tableBox);
 			},
 			'remove': function(index) {
 				$tableBox.find('tbody tr:eq(' + index + ')').remove();
@@ -308,6 +512,13 @@
 			},
 			'isSelected': function(rowIndex) {
 				return $tableBox.find('tr:eq(' + rowIndex + ')').hasClass('selected');
+			},
+			'clearSelect': function() {
+				$tableBox.find('tr.selected').removeClass('selected');
+				$tableBox.find('.free-table-selector input').prop('checked', false);
+			},
+			'destroyHeaderMenu': function() {
+				$('.free-table-header-menu').remove();
 			}
 		};
 	};

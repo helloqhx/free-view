@@ -2,15 +2,15 @@
 <html>
     <head>
         <title>Free views UI Kits demo page</title>
+        <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
         <link rel="stylesheet" type="text/css" href="dist/free.min.css">
         <!-- <link rel="stylesheet" type="text/css" href="src/base.css"> -->
         <!-- <link rel="stylesheet" type="text/css" href="src/components/jquery.table.css"> -->
-        <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
     </head>
     <style type="text/css">
         .body {
             padding: 20px;
-            width: 600px;
+            width: 650px;
             margin: 0 auto;
         }
         .body > .info {
@@ -108,12 +108,14 @@
         $(function() {
             $('#free-table').table({
                 'selectable': true,
+                'enableColumnReorder': true,
+                'enableColumnResize': true,
                 'columns': [
-                    {'id': 'no', 'name': 'Student No.', 'escape': true},
-                    {'id': 'name', 'name': 'Student Name'},
-                    {'id': 'sex', 'name': 'Gender', 'width': 120, 'cssClass': "red"},
-                    {'id': 'grade', 'name': 'Student Grade', 'hide': true},
-                    {'id': 'comment', 'name': 'Comment', 'width': 120}
+                    {'id': 'no', 'name': 'Student No.', 'width': 100, 'escape': true, 'sort': true},
+                    {'id': 'name', 'name': 'Student Name', 'width': 100},
+                    {'id': 'sex', 'name': 'Gender', 'width': 100, 'cssClass': "red"},
+                    {'id': 'grade', 'name': 'Student Grade', 'width': 100,'hide': true, 'sort': true},
+                    {'id': 'comment', 'name': 'Comment', 'width': 100}
                 ],
                 'data': [
                     {'no': '08300240001', 'name': 'Henson', 'sex': 'Male', 'grade': 100, 'comment': 'Best one'},
