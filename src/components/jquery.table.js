@@ -176,26 +176,63 @@
 
 		// selectable
 		if(opts['selectable']) {
+			function _getRows(first, second) {
+				var min = Math.min(first, second), max = Math.max(first, second);
+				var rows = $table.find('tbody > tr').slice(min, max + 1);
+				var allSelected = true;
+				for(var i = 0, len = rows.length; i < len; i ++) {
+					if(!$(rows[i]).hasClass('selected')) {
+						allSelected = false;
+						break;
+					}
+				}
+
+				return {
+					'select': !allSelected,
+					'rows': rows
+				}
+			}
+
 			$table.find('th.free-table-selector > input').on('change', function() {
 				var checked = $(this).prop('checked');
 				$table.find('tbody td.free-table-selector > input').prop('checked', checked);
 				checked ? $table.find('tbody tr').addClass('selected') : $table.find('tbody tr').removeClass('selected');
 			});
 
-			$table.on('change', 'td.free-table-selector > input', function() {
-				$(this).parents('tr').toggleClass('selected');
+			$table.on('click', 'thead .free-table-selector', function(e) {
+				if($(e.target).is('input')) return;
+				$(this).find('input').trigger('click');
+			});
+
+			$table.on('click', 'tbody .free-table-selector', function(e) {
+				var $self = $(this), $target = $(e.target);
+				var last = $table.find('th.free-table-selector').data('last-click');
+				var $tr = $self.parent(), current = $tr.index();
+				if(null != last && last != current && e.shiftKey) {
+					var result = _getRows(last, current);
+					if(result['select']) {
+						$(result['rows']).addClass('selected');
+						$(result['rows']).find('input').prop('checked', true);
+					} else {
+						$(result['rows']).removeClass('selected');
+						$(result['rows']).find('input').prop('checked', false);
+					}
+				} else {
+					$tr.toggleClass('selected');
+					if(!$target.is('input')) {
+						var $input = $self.find('input');
+						$input.prop('checked', !$input.prop('checked'));
+					}
+				}
 
 				var unSelected = $table.find('tbody tr:not(.selected)');
 				$table.find('th.free-table-selector input').prop('checked', unSelected.length === 0);
+
 				if(typeof opts['onSelectChange'] === 'function') {
 					opts['onSelectChange']();
 				}
-			});
 
-			$table.on('click', '.free-table-selector', function(e) {
-				if($(e.target).is('input')) return;
-				var $input = $(this).find('input');
-				$input.prop('checked', !$input.prop('checked')).change();
+				$table.find('th.free-table-selector').data('last-click', current);
 			});
 		}
 
@@ -363,6 +400,7 @@
 				var handler = _throttle(resizeHandler);
 				$(document).on('mousemove', handler);
 				$(document).one('mouseup', function(e) {
+					$table.find('thead').data('resize-info', null);
 					$(document).off('mousemove', handler);
 				});
 			});

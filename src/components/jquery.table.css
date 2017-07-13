@@ -65,9 +65,6 @@
 	background-color: #5f9ea0;
 	color: #fff;
 }
-.free-table-container tbody > tr.selected > td {
-	border-color: #5f9ea0;
-}
 /* pagination css */
 .free-table-container .page-box {
 	text-align: center;
