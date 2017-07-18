@@ -105,7 +105,7 @@
 	function showPagination(opts, total) {
 		opts.$pageBox.twbsPagination('destroy');
 		opts.$pageBox.twbsPagination({
-			'totalPages': Math.ceil(total / PAGE_SIZE),
+			'totalPages': Math.ceil(total / opts['pageSize']),
 			'visiblePages': 7,
 			'hideOnlyOnePage': true,
 			'initiateStartPageClick': false,
@@ -154,8 +154,8 @@
 			_preprocess(items);
 			opts.data = items;
 			makeTable(opts, items);
-			opts['info'] && updateInfo(opts, (page + 1), Math.ceil(total / PAGE_SIZE), total);
-			if(!pagination || total <= PAGE_SIZE) opts.$pageBox.hide();
+			opts['info'] && updateInfo(opts, (page + 1), Math.ceil(total / opts['pageSize']), total);
+			if(!pagination || total <= opts['pageSize']) opts.$pageBox.hide();
 			else if(isFreshCall) showPagination(opts, total);
 
             opts.onLoad(items);
@@ -509,6 +509,7 @@
 		_bind($self, opts);
 
 		return {
+			'$self': $self,
 			'refresh': function() {
 				getPage(opts, true);
 			},
