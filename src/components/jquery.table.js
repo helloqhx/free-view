@@ -12,6 +12,7 @@
 		'selectable': false,
 		'enableColumnResize': false,
 		'enableColumnReorder': false,
+		'enableColumnHide': false,
 		'onLoad': function(){}
 	};
 
@@ -237,48 +238,53 @@
 		}
 
 		// hide & show columns
-		$table.find('thead').on('contextmenu', function(e) {
-			e.preventDefault();
-			$('.free-table-header-menu').remove();
-			var $contextmenu = $('<div class="free-table-header-menu"></div>');
-			$contextmenu.appendTo('body');
-			var x = e.pageX, y = e.pageY;
-			$contextmenu.css({
-				'top': y,
-				'left': x
-			});
-			var columns = opts['columns'];
-			var html = [];
-			for(var i = 0; i < columns.length; i ++) {
-				html.push('<div class="item" x-id="' + columns[i]['id'] + '"><input type="checkbox"' +
-					(columns[i]['hide'] ?  '' : 'checked') +
-					'/><span class="name">' + columns[i]['name'] + '</span></div>');
-			}
-			$contextmenu.append(html.join(''));
+		if(opts['enableColumnHide']) {
+			$table.find('thead').on('contextmenu', function(e) {
+				e.preventDefault();
+				$('.free-table-header-menu').remove();
+				var $contextmenu = $('<div class="free-table-header-menu"></div>');
+				$contextmenu.appendTo('body');
+				var x = e.pageX, y = e.pageY;
+				$contextmenu.css({
+					'top': y,
+					'left': x
+				});
+				var columns = opts['columns'];
+				var html = [];
+				for(var i = 0; i < columns.length; i ++) {
+					html.push('<div class="item" x-id="' + columns[i]['id'] + '"><input type="checkbox"' +
+						(columns[i]['hide'] ?  '' : 'checked') +
+						'/><span class="name">' + columns[i]['name'] + '</span></div>');
+				}
+				$contextmenu.append(html.join(''));
 
-			$contextmenu.on('click', '.item', function(e) {
-				if($(e.target).is('input')) return;
-				var $input = $(this).find('input');
-				$input.prop('checked', !$input.prop('checked')).change();
-			});
-			$contextmenu.on('click', function(e) {
-				e.stopPropagation();
-			});
-			$('body').one('click', function(e) {
-				$contextmenu.remove();
-			});
-			$contextmenu.on('change', '.item > input', function(e) {
-				var colId = $(this).parent().attr('x-id');
-				var col = $self.find('thead th[x-id=' + colId + ']');
-				opts.colMap[colId]['hide'] = !$(this).prop('checked');
-				var colIdx = col.index() + 1;
+				$contextmenu.on('click', '.item', function(e) {
+					if($(e.target).is('input')) return;
+					var $input = $(this).find('input');
+					$input.prop('checked', !$input.prop('checked')).change();
+				});
+				$contextmenu.on('click', function(e) {
+					e.stopPropagation();
+				});
+				$('body').one('click', function(e) {
+					$contextmenu.remove();
+				});
+				$table.one('click', function(e) {
+					$contextmenu.remove();
+				});
+				$contextmenu.on('change', '.item > input', function(e) {
+					var colId = $(this).parent().attr('x-id');
+					var col = $self.find('thead th[x-id=' + colId + ']');
+					opts.colMap[colId]['hide'] = !$(this).prop('checked');
+					var colIdx = col.index() + 1;
 
-				var $tds = $('tbody > tr > td:nth-child(' + colIdx + ')');
-				col.toggleClass('hide');
-				$tds.toggleClass('hide');
-				_setTableWidth($table, opts);
+					var $tds = $('tbody > tr > td:nth-child(' + colIdx + ')');
+					col.toggleClass('hide');
+					$tds.toggleClass('hide');
+					_setTableWidth($table, opts);
+				});
 			});
-		});
+		}
 
 		// sort
 		$table.on('click', 'thead > th > .sort-handler', function() {
