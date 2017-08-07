@@ -469,7 +469,7 @@
 
 		if(opts.selectable) w += SELECT_BOX_WIDTH;
 		for(var i = 0, len = columns.length; i < len; i ++) {
-			if(!columns[i]['hide']) w += columns[i]['width'] || MIN_WIDTH;
+			if(!columns[i]['hide']) w += columns[i]['width'] || opts['minWidth'];
 		}
 
 		$table.css('width', w);
