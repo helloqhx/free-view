@@ -68,6 +68,9 @@
 	background-color: #5f9ea0;
 	color: #fff;
 }
+.free-table-container tbody > tr.active {
+	background-color: #ecf6fd;
+}
 /* pagination css */
 .free-table-container .page-box {
 	text-align: center;
