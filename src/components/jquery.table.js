@@ -9,6 +9,7 @@
 		'info': true,
 		'minWidth': 80,
 		'pageSize': 30,
+		'sortType': 'client',  // client or server
 		'selectable': false,
 		'enableColumnResize': false,
 		'enableColumnReorder': false,
@@ -93,7 +94,8 @@
 		return '<tr>' + html.join('') + '</tr>';
 	}
 
-	function makeTbody(columns, items, opts) {
+	function makeTbody(opts, items) {
+		var columns = opts['columns'];
 		var html = [];
 
 		for(var i = 0, len = items.length; i < len; i ++) {
@@ -121,7 +123,7 @@
         $tbody.empty();
 
 		if(items.length > 0) {
-            $tbody.append(makeTbody(opts['columns'], items, opts));
+            $tbody.append(makeTbody(opts, items));
 			$tbody.find('tr').each(function(index) {
 				$(this).data('item', items[index]);
 			});
@@ -129,10 +131,11 @@
 			opts.$pageBox.hide();
 		}
 
-		_clear(opts.$tableBox);
+		_clearCheckbox(opts.$tableBox);
+		opts['sortType'] == 'client' && _clearSort(opts.$tableBox);
 	}
 
-	function getPage(opts, isFreshCall, page) {
+	function getPage(opts, reloadNav, page) {
 		var api = opts['url'], params = opts['params'],
 			prepare = opts['prepare'], pagination = opts['pagination'];
 
@@ -155,9 +158,10 @@
 			_preprocess(items);
 			opts.data = items;
 			makeTable(opts, items);
+
 			opts['info'] && updateInfo(opts, (page + 1), Math.ceil(total / opts['pageSize']), total);
 			if(!pagination || total <= opts['pageSize']) opts.$pageBox.hide();
-			else if(isFreshCall) showPagination(opts, total);
+			else if(reloadNav) showPagination(opts, total);
 
             opts.onLoad(items);
 		});
@@ -292,14 +296,14 @@
 			// sort-asc -> sort-desc
 			if($handler.hasClass('sort-asc')) {
 				$handler.removeClass('sort-asc').addClass('sort-desc');
-				_sort(opts, colId, -1);
+				opts['sortType'] == 'client' ? _sort(opts, colId, -1) : _sortInServer(opts, colId, 'desc');
 			} else if($handler.hasClass('sort-desc')) {
 				$handler.removeClass('sort-desc sort-asc')
-				_sort(opts, 'free-index');
+				opts['sortType'] == 'client' ? _sort(opts, 'free-index') : _sortInServer(opts);
 			} else {
 				$table.find('thead > th > .sort-handler').removeClass('sort-asc sort-desc');
 				$handler.addClass('sort-asc');
-				_sort(opts, colId);
+				opts['sortType'] == 'client' ? _sort(opts, colId) : _sortInServer(opts, colId, 'asc');
 			}
 		});
 
@@ -451,6 +455,19 @@
 		opts.$tableBox.find('tbody').append($trs);
 	}
 
+	function _sortInServer(opts, sortKey, sortType) {
+		opts['params'] = opts['params'] || {};
+		if(null == sortKey) {
+			delete opts['params']['order-key'];
+			delete opts['params']['order-type'];
+		} else {
+			opts['params']['order-key'] = sortKey;
+			opts['params']['order-type'] = sortType;
+		}
+
+		getPage(opts, true);
+	}
+
 	function _preprocess(data) {
 		for(var i = 0, len = data.length; i < len; i ++) {
 			data[i]['free-index'] = i;  // add initial index to restore order
@@ -459,9 +476,12 @@
 		return data;
 	}
 
-	function _clear($table) {
-		$table.find('th.free-table-selector input').prop('checked', false);
+	function _clearSort($table) {
 		$table.find('th > .sort-handler').removeClass('sort-asc sort-desc');
+	}
+
+	function _clearCheckbox($table) {
+		$table.find('th.free-table-selector input').prop('checked', false);
 	}
 
 	function _setTableWidth($table, opts) {
@@ -534,14 +554,15 @@
 				} else {
 					$tr.before($target);
 				}
-				_clear($tableBox);
+				_clearCheckbox($tableBox);
 			},
 			'remove': function(index) {
 				$tableBox.find('tbody tr:eq(' + index + ')').remove();
 			},
 			'setParams': function(ps) {
 				opts.params = ps;
-				getPage(opts, true)
+				getPage(opts, true);
+				_clearSort(opts.$tableBox);  // force clear sort info
 			},
 			'getSelected': function() {
 				var $trs = $tableBox.find('tr.selected');
