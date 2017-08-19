@@ -294,16 +294,16 @@
 		$table.on('click', 'thead > th > .sort-handler', function() {
 			var $handler = $(this), colId = $handler.parent().attr('x-id');
 			// sort-asc -> sort-desc
-			if($handler.hasClass('sort-asc')) {
-				$handler.removeClass('sort-asc').addClass('sort-desc');
-				opts['sortType'] == 'client' ? _sort(opts, colId, -1) : _sortInServer(opts, colId, 'desc');
-			} else if($handler.hasClass('sort-desc')) {
+			if($handler.hasClass('sort-desc')) {
+				$handler.removeClass('sort-desc').addClass('sort-asc');
+				opts['sortType'] == 'client' ? _sort(opts, colId) : _sortInServer(opts, colId, 'asc');
+			} else if($handler.hasClass('sort-asc')) {
 				$handler.removeClass('sort-desc sort-asc')
 				opts['sortType'] == 'client' ? _sort(opts, 'free-index') : _sortInServer(opts);
 			} else {
 				$table.find('thead > th > .sort-handler').removeClass('sort-asc sort-desc');
-				$handler.addClass('sort-asc');
-				opts['sortType'] == 'client' ? _sort(opts, colId) : _sortInServer(opts, colId, 'asc');
+				$handler.addClass('sort-desc');
+				opts['sortType'] == 'client' ? _sort(opts, colId, -1) : _sortInServer(opts, colId, 'desc');
 			}
 		});
 
