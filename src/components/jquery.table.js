@@ -107,8 +107,9 @@
 
 	function showPagination(opts, total) {
 		opts.$pageBox.twbsPagination('destroy');
+		var totalPages = Math.ceil(total / opts['pageSize']);
 		opts.$pageBox.twbsPagination({
-			'totalPages': Math.ceil(total / opts['pageSize']),
+			'totalPages': totalPages,
 			'visiblePages': 7,
 			'hideOnlyOnePage': true,
 			'initiateStartPageClick': false,
@@ -116,6 +117,38 @@
 				getPage(opts, false, p - 1);
 			}
 		}).show();
+		showGoPage(opts, totalPages);
+	}
+
+	function gotoPage(opts, totalPages) {
+		var $input = opts.$pageBox.find('input');
+		if($input.hasClass('error')) $input.removeClass('error');
+		var pageText = $input.val();
+		var page = parseInt(pageText);
+		if(isNaN(page) || page < 1 || page > totalPages) {
+			free.message('Invalid page number. Max page: ' + totalPages, 'error');
+			opts.$pageBox.find('input').addClass('error');
+			return;
+		}
+		if(opts.$pageBox.twbsPagination('getCurrentPage') == page) return;
+		opts.$pageBox.twbsPagination('show', page);
+	}
+
+	function showGoPage(opts, totalPages) {
+		if(totalPages > 7) {
+			opts.$pageBox.append('<div class="goto"><input class="free-input" type="number"/><button class="free-btn default">Go</button></div>')
+			opts.$pageBox.find('.goto > button').on('click', function (e) {
+				gotoPage(opts, totalPages);
+			});
+			opts.$pageBox.find('.goto > input').on('keydown', function(e) {
+				if(e.keyCode === 13) gotoPage(opts, totalPages);
+			});
+			opts.$pageBox.find('.goto > input').on('focus', function(e) {
+				$(this).removeClass('error');
+			});
+		} else {
+			opts.$pageBox.find('.goto').remove();
+		}
 	}
 
 	function makeTable(opts, items) {
