@@ -112,7 +112,7 @@
                 'enableColumnResize': true,
                 'columns': [
                     {'id': 'no', 'name': 'Student No.', 'width': 100, 'escape': true, 'sort': true},
-                    {'id': 'name', 'name': 'Student Name', 'width': 100},
+                    {'id': 'name', 'name': 'Student Name', 'width': 100, 'editable': true, 'onSubmit': function(newValue) {console.log(newValue);}},
                     {'id': 'sex', 'name': 'Gender', 'width': 100, 'cssClass': "red"},
                     {'id': 'grade', 'name': 'Student Grade', 'width': 100,'hide': true, 'sort': true},
                     {'id': 'comment', 'name': 'Comment', 'width': 100}

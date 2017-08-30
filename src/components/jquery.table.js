@@ -2,7 +2,7 @@
 	var SELECT_BOX_WIDTH = 35, THROTTLE_THRESHOLD = 100;
 	var _defaults = {
 		'pagination': false,
-		'columns': [],  // name, width, id, formatter, min_width
+		'columns': [],  // name, width, id, formatter, min_width, sort, editable, hide
 		'url': '',
 		'params': null,
 		'data': [],
@@ -18,14 +18,36 @@
 	};
 
 	/* throttle en event handler */
-	var _throttle = function(fn) {
+	function _throttle(fn) {
 		var prev = Date.now();
 		return function (e) {
 			if((Date.now() - prev) < THROTTLE_THRESHOLD) return;
 			fn.call(this, e);
 			prev = Date.now();
 		};
-	};
+	}
+
+	function _defaultEditor($td, column, item, onDone) {
+		$('<input class="free-default-editor free"/>')
+			.val(item[column['id']] || '')
+			.on('keydown', function(e) {
+				if(e.keyCode == 13) {  // submit
+					onDone($(this).val());
+				} else if(e.keyCode == 27) {  // cancel
+					onDone();
+				}
+			})
+			.on('blur', function(e) {
+				onDone();  // cancel
+			})
+			.appendTo($td.empty())
+			.select()
+			.focus();
+	}
+
+	function _defaultFormatter(item, column) {
+		return null == item[column['id']] ? '' : item[column['id']];
+	}
 
 	function makeThead(opts, columns) {
 		var column, width, html = [];
@@ -39,14 +61,21 @@
 			if(null == column['id']) throw 'Each column must have an unique id';
 			colMap[column['id']] = column;
 			column['min_width'] = column['min_width'] || opts['minWidth'];
+			if(column['width'] && column['min_width'] > column['width']) column['min_width'] = column['width'];
 			width = column['width'] || column['min_width'];
 
 			cssClass = '';
 			if(column['hide']) cssClass += ' hide';
+			if(column['editable']) {
+				cssClass += ' editable';
+				if(typeof column['editor'] !== 'function') column['editor'] = _defaultEditor;
+			}
+			if(typeof column['formatter'] !== 'function') column['formatter'] = _defaultFormatter;
 			if(opts['enableColumnReorder']) cssClass += ' movable';
 
 			cssClass = cssClass.trim();
-			html.push('<th class="' + cssClass + '" x-id=' + column['id']
+			if(cssClass) cssClass = 'class=' + cssClass;
+			html.push('<th ' + cssClass + ' x-id=' + column['id']
 				+ ' width="' + width + 'px">'
 				+ '<span class="text">' + column['name'] + '</span>'
 				+ (opts['enableColumnResize'] ? '<span class="resize-handler"/>' : '')
@@ -65,26 +94,20 @@
 			html.push('<td class="free-table-selector"><input type="checkbox"/></td>');
 		}
 
-		var td, col, colId, formatter, cssClass;
+		var td, col, colId, text, formatter, cssClass;
 		for(var i = 0, len = columns.length; i < len; i ++) {
 			col = columns[i];
 			colId = col['id'];
-			formatter = col['formatter'];
-
-			if(typeof formatter === 'function') {
-				text = formatter(item) + '';  // conver to string
-			} else {
-				text = null == item[col['id']] ? '' : item[col['id']] + '';
-			}
+			text = col['formatter'](item, col) + '';  // conver to string
 
 			td = col['escape'] ? $('<i/>').text(text).html() : text;
-			cssClass = col['hide'] ? 'hide' : '';
+			cssClass = [];
+			col['hide'] && cssClass.push('hide');
+			col['editable'] && cssClass.push('editable');
+			col['cssClass'] && cssClass.push(col['cssClass']);
 
-			if(col['cssClass']) {
-				cssClass += ' ' + col['cssClass'];
-			}
-			if(cssClass) {
-				td = '<td class=' + cssClass + '>' + td + '</td>';
+			if(cssClass.length > 0) {
+				td = '<td class=' + cssClass.join(' ') + '>' + td + '</td>';
 			} else {
 				td = '<td>' + td + '</td>';
 			}
@@ -448,6 +471,19 @@
 				});
 			});
 		}
+
+		// edit column
+		$table.on('dblclick', 'td.editable', function(e) {
+			var $td = $(this), colId = $table.find('thead > th').eq($td.index()).attr('x-id'), column = opts['colMap'][colId], item = $td.parent().data('item');
+			$td.addClass('editing');
+			column['editor']($td, column, item, function(newValue) {
+				if(null != newValue) {
+					item[column['id']] = newValue;
+					(typeof column['onSubmit'] === 'function') && column['onSubmit'](newValue, column, item);
+				}
+				$td.empty().append(column['formatter'](item, column)).removeClass('editing');
+			});
+		});
 	}
 
 	function _reorderColumn(opts, srcIndex, destIndex) {
