@@ -256,6 +256,19 @@
 	function _bind($self, opts) {
 		var $table = opts.$tableBox;
 
+		if(opts['pagination']) {
+			$('body').on('keydown', function(e) {
+				if(e.ctrlKey) {
+					var pageData = opts.$pageBox.data('twbs-pagination'), totalPages = pageData.options['totalPages'], currentPage = pageData.currentPage;
+					if(totalPages == 1) return;
+					if(e.which == 78) { // ctrl + N: next page
+						currentPage < totalPages && opts.$pageBox.twbsPagination('show', currentPage + 1);
+					} else if(e.which == 80) {  // ctrl + P: previous page
+						currentPage > 1 && opts.$pageBox.twbsPagination('show', currentPage - 1);
+					}
+				}
+			});
+		}
 		// selectable
 		if(opts['selectable']) {
 			function _getRows(first, second) {
