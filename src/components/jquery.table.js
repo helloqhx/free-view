@@ -271,6 +271,11 @@
 		}
 		// selectable
 		if(opts['selectable']) {
+			$('body').on('keydown', function(e) {
+				if(e.ctrlKey && e.which == 65) {  // ctrl + A: select all
+					$table.find('tbody tr').addClass('selected');
+				}
+			});
 			function _getRows(first, second) {
 				var min = Math.min(first, second), max = Math.max(first, second);
 				var rows = $table.find('tbody > tr').slice(min, max + 1);
