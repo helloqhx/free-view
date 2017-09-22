@@ -5,8 +5,7 @@ const gulp = require('gulp'),
     uglify = require('gulp-uglify'),
 	clean = require('gulp-clean'),
 	gulpif = require('gulp-if'),
-    cssmin = require('gulp-clean-css'),
-    sass = require('gulp-sass');
+    cssmin = require('gulp-clean-css');
 
 const JS_FILE_NAME = 'free.min.js', CSS_FILE_NAME = 'free.min.css';
 

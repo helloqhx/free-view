@@ -107,7 +107,7 @@
 			col['cssClass'] && cssClass.push(col['cssClass']);
 
 			if(cssClass.length > 0) {
-				td = '<td class=' + cssClass.join(' ') + '>' + td + '</td>';
+				td = '<td class="' + cssClass.join(' ') + '">' + td + '</td>';
 			} else {
 				td = '<td>' + td + '</td>';
 			}
@@ -232,6 +232,27 @@
 		opts.$infoBox.find('span.sum').text(total);
 	}
 
+	function _toggleColumns(opts, cols, type) {
+		var $table = opts.$tableBox;
+		var ths = [], tds = [];
+		var hide = type == 'hide';
+		for(var i = 0; i < cols.length; i ++) {
+			var colId = cols[i], $col = $table.find('thead th[x-id=' + colId + ']');
+			var colIdx = $col.index() + 1;
+			opts.colMap[colId]['hide'] = hide;
+
+			if(hide) {
+				$col.addClass('hide');
+				$table.find('tbody > tr > td:nth-child(' + colIdx + ')').addClass('hide');
+			} else {
+				$col.removeClass('hide');
+				$table.find('tbody > tr > td:nth-child(' + colIdx + ')').removeClass('hide');
+			}
+		}
+
+		_setTableWidth($table, opts);
+	}
+
 	function _bind($self, opts) {
 		var $table = opts.$tableBox;
 
@@ -338,7 +359,7 @@
 					opts.colMap[colId]['hide'] = !$(this).prop('checked');
 					var colIdx = col.index() + 1;
 
-					var $tds = $('tbody > tr > td:nth-child(' + colIdx + ')');
+					var $tds = $self.find('tbody > tr > td:nth-child(' + colIdx + ')');
 					col.toggleClass('hide');
 					$tds.toggleClass('hide');
 					_setTableWidth($table, opts);
@@ -654,6 +675,12 @@
 			},
 			'destroyHeaderMenu': function() {
 				$('.free-table-header-menu').remove();
+			},
+			'showColumns': function(cols) {
+				_toggleColumns(opts, cols, 'show');
+			},
+			'hideColumns': function(cols) {
+				_toggleColumns(opts, cols, 'hide');
 			}
 		};
 	};
