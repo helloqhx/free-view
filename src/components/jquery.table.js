@@ -263,8 +263,10 @@
 					if(totalPages == 1) return;
 					if(e.which == 78) { // ctrl + N: next page
 						currentPage < totalPages && opts.$pageBox.twbsPagination('show', currentPage + 1);
+						return false;
 					} else if(e.which == 80) {  // ctrl + P: previous page
 						currentPage > 1 && opts.$pageBox.twbsPagination('show', currentPage - 1);
+						return false;
 					}
 				}
 			});
@@ -272,8 +274,8 @@
 		// selectable
 		if(opts['selectable']) {
 			$('body').on('keydown', function(e) {
-				if(e.ctrlKey && e.which == 65) {  // ctrl + A: select all
-					$table.find('tbody tr').addClass('selected');
+				if($(e.target).is('body') && e.ctrlKey && e.which == 65) {  // ctrl + A: select all
+					$table.find('th.free-table-selector input').prop('checked', true).change();
 				}
 			});
 			function _getRows(first, second) {
