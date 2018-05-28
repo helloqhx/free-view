@@ -45,7 +45,7 @@
 			.focus();
 	}
 
-	function _defaultFormatter(item, column) {
+	function _defaultFormatter(item, column, index) {
 		return null == item[column['id']] ? '' : item[column['id']];
 	}
 
@@ -87,7 +87,7 @@
 		return html.join('');
 	}
 
-	function makeTr(columns, item, opts) {
+	function makeTr(columns, item, index, opts) {
 		var html = [];
 
 		if(opts['selectable']) {
@@ -98,7 +98,7 @@
 		for(var i = 0, len = columns.length; i < len; i ++) {
 			col = columns[i];
 			colId = col['id'];
-			text = col['formatter'](item, col) + '';  // conver to string
+			text = col['formatter'](item, col, index) + '';  // conver to string
 
 			td = col['escape'] ? $('<i/>').text(text).html() : text;
 			cssClass = [];
@@ -122,7 +122,7 @@
 		var html = [];
 
 		for(var i = 0, len = items.length; i < len; i ++) {
-			html.push(makeTr(columns, items[i], opts));
+			html.push(makeTr(columns, items[i], i, opts));
 		}
 
 		return html;
@@ -515,14 +515,14 @@
 
 		// edit column
 		$table.on('dblclick', 'td.editable', function(e) {
-			var $td = $(this), colId = $table.find('thead > th').eq($td.index()).attr('x-id'), column = opts['colMap'][colId], item = $td.parent().data('item');
+			var $td = $(this), index = $td.index(), colId = $table.find('thead > th').eq(index).attr('x-id'), column = opts['colMap'][colId], item = $td.parent().data('item');
 			$td.addClass('editing');
 			column['editor']($td, column, item, function(newValue) {
 				if(null != newValue) {
 					item[column['id']] = newValue;
 					(typeof column['onSubmit'] === 'function') && column['onSubmit'](newValue, column, item);
 				}
-				$td.empty().append(column['formatter'](item, column)).removeClass('editing');
+				$td.empty().append(column['formatter'](item, column, index)).removeClass('editing');
 			});
 		});
 	}
@@ -658,7 +658,7 @@
 			},
 			'insert': function(item, index) {
 				var $tr = $tableBox.find('tbody tr:eq(' + index + ')');
-				var $target = makeTr(opts['columns'], item);
+				var $target = makeTr(opts['columns'], item, index, opts);
 				if($tr.length === 0) {
 					$tableBox.find('tbody').append($target);
 				} else {
